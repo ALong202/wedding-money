@@ -1,32 +1,50 @@
 import express from "express";
 import cors from "cors";
 import XLSX from "xlsx";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use(cors());
 
-// Load Excel file
+// --- Setup __dirname để serve static ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, "public")));
+
+// --- Hàm bỏ dấu tiếng Việt
+function normalizeString(str) {
+  return String(str || "")
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // bỏ dấu
+    .toLowerCase()
+    .trim();
+}
+
+// --- Load Excel ---
 const workbook = XLSX.readFile("data.xlsx");
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
 const data = XLSX.utils.sheet_to_json(sheet);
 
-// Simple search API
-app.get("/search", (req, res) => {
-  const q = (req.query.q || "").toLowerCase();
+// --- Debug ---
+console.log("Loaded data:", data);
 
-  const results = data.filter(item =>
-    String(item.name || "").toLowerCase().includes(q)
-  );
+// --- API tìm kiếm ---
+app.get("/search", (req, res) => {
+  const q = normalizeString(req.query.q || "");
+
+  const results = data.filter(item => {
+    const name = normalizeString(item.name);
+    return name.includes(q);
+  });
 
   res.json({
-    query: q,
+    query: req.query.q || "",
     count: results.length,
     data: results
   });
 });
 
-// Render requires your app to listen on PORT env variable
+// --- Chạy server ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server đang chạy tại port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
