@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: excel-search-api
+    env: node
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    plan: free
+    autoDeploy: true
