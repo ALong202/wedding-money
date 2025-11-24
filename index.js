@@ -15,8 +15,8 @@ app.use(express.static(path.join(__dirname, "public")));
 // --- Hàm bỏ dấu tiếng Việt
 function normalizeString(str) {
   return String(str || "")
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // bỏ dấu
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // bỏ dấu
     .toLowerCase()
     .trim();
 }
@@ -27,13 +27,13 @@ const sheet = workbook.Sheets[workbook.SheetNames[0]];
 const data = XLSX.utils.sheet_to_json(sheet);
 
 // --- Debug ---
-console.log("Loaded data:", data);
+// console.log("Loaded data:", data);
 
 // --- API tìm kiếm ---
 app.get("/search", (req, res) => {
   const q = normalizeString(req.query.q || "");
 
-  const results = data.filter(item => {
+  const results = data.filter((item) => {
     const name = normalizeString(item.name);
     return name.includes(q);
   });
@@ -41,7 +41,7 @@ app.get("/search", (req, res) => {
   res.json({
     query: req.query.q || "",
     count: results.length,
-    data: results
+    data: results,
   });
 });
 
